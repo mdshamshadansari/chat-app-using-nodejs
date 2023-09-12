@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatApp</title>
+</head>
+<body>
+    
+    <h1>ChatApp</h1>
+    <!-- <button id = "startbtn" data-roomid = "<%= id %>">Start Chat</button> -->
+    <input type="hidden" id="startbtn" data-roomid="<%= id %>">
+    <input type="text" id="userId", placeholder="username ...">
+    <input type="text" id="msg-send", placeholder="message ...">
+    <button id = "btn">send</button>
+
+    <ul id = "msglist">
+        <% for( let i = 0; i < chats.length; i++ ) { %>
+            <li>
+                <%= `${chats[i].user}: ${chats[i].content}`  %>
+            </li>
+        <% } %>
+
+    </ul>
+
+    <script src = "/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io();
+
+        let btn = document.getElementById('btn');
+        let inputmsg = document.getElementById('msg-send');
+        let username = document.getElementById('userId');
+        let msgList = document.getElementById('msglist');
+        let startbtn = document.getElementById('startbtn');
+
+        socket.emit('join_room',{
+                roomId : startbtn.getAttribute('data-roomid')
+        })
+
+        // startbtn.onclick = function () {
+        //     socket.emit('join_room',{
+        //         roomId : startbtn.getAttribute('data-roomid')
+        //     })
+        // }
+        btn.onclick = function () {
+            socket.emit('send-msg',{
+                msg : inputmsg.value,
+                username : username.value,
+                roomId : startbtn.getAttribute('data-roomid')
+            })
+        }
+        
+        socket.on('msg-rcvd', function (data) {
+            // console.log('createMessage event received from server');
+            console.log(data)
+            const limsg = document.createElement('li');
+            limsg.innerText = `${data.username}: ${data.msg}`;
+            // console.log(div);
+            msgList.appendChild(limsg);
+        });
+       
+        
+    </script>
+</body>
+</html>
